@@ -3,11 +3,11 @@ package ru.javawebinar.topjava.util;
 import ru.javawebinar.topjava.model.UserMeal;
 import ru.javawebinar.topjava.model.UserMealWithExceed;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * GKislin
@@ -24,13 +24,43 @@ public class UserMealsUtil {
                 new UserMeal(LocalDateTime.of(2015, Month.MAY, 31,20,0), "Ужин", 510)
         );
         getFilteredWithExceeded(mealList, LocalTime.of(7, 0), LocalTime.of(12,0), 2000);
+
+        List<UserMealWithExceed> mealWith = getFilteredWithExceeded(mealList, LocalTime.of(7, 0), LocalTime.of(12,0), 2000);
+
+
 //        .toLocalDate();
 //        .toLocalTime();
     }
 
     public static List<UserMealWithExceed>  getFilteredWithExceeded(List<UserMeal> mealList, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        System.out.println(" // TODO return filtered list with correctly exceeded field test");
-        System.out.println("test");
-        return null;
+        List<UserMealWithExceed> mealWithExceed = new ArrayList<>();
+        Map<LocalDate, Integer> calloryPerDayMap = new HashMap<>();
+
+        for (UserMeal userMeal : mealList) {
+            LocalDate key = userMeal.getDateTime().toLocalDate();
+
+
+            if (calloryPerDayMap.get(key) == null) {
+                calloryPerDayMap.put(key, new Integer(userMeal.getCalories()));
+            } else {
+                calloryPerDayMap.put(key, (calloryPerDayMap.get(key) + userMeal.getCalories()));
+            }
+
+        }
+
+        for (UserMeal userMeal : mealList) {
+            boolean exceeded = false;
+            if (calloryPerDayMap.get(userMeal.getDateTime().toLocalDate()) > caloriesPerDay) {
+                exceeded = true;
+            }
+
+            UserMealWithExceed userMealWithExceed = new UserMealWithExceed(userMeal.getDateTime(),
+                    userMeal.getDescription(), userMeal.getCalories(), exceeded);
+            if(TimeUtil.isBetween(userMeal.getDateTime().toLocalTime(), startTime, endTime)) {
+                mealWithExceed.add(userMealWithExceed);
+            }
+
+        }
+        return mealWithExceed;
     }
 }
